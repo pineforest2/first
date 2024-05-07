@@ -67,7 +67,7 @@ void popStack(struct stack *s) {
 }
 void destroyStack(struct stack *s) { free(s); s = NULL; }
 
-/* 例程 */
+/* 例程：用数组实现的顺序表。程序仅作参考。 */
 #define INIT_NUM 58 /* user-defined */
 struct vector {
 	int *data;
@@ -82,9 +82,13 @@ struct vector *initVector() {
 	v->capacity = INIT_NUM;
 	return v;
 }
+void __growVector(struct vector *v) {
+	v->data = (int *)realloc(v->data, sizeof(int) * (v->capacity + INIT_NUM / 2));
+	v->capacity += INIT_NUM / 2;
+}
 void pushbackVector(struct vector *v, int data) {
 	if (v->capacity - v->length < INIT_NUM / 2) {
-		// grow
+		__growVector(v);
 	}
 	*(v->data + v->length) = data;
 	v->length++;
@@ -96,7 +100,7 @@ int atVector(struct vector *v, int idx) {
 }
 void insertVector(struct vector *v, int e, int idx) {
 	if (v->capacity - v->length < INIT_NUM / 2) {
-		// grow
+		__growVector(v);
 	}
 	int ptr1 = v->length;
 	int ptr2 = ptr1 - 1;
@@ -121,6 +125,7 @@ void destroyVector(struct vector *v) {
 	free(v); v = NULL;
 }
 
+/* 简单的测试 */
 int main() {
 	struct queue *q = initQueue();
 	pushQueue(q, 99);
@@ -135,4 +140,19 @@ int main() {
 	popStack(s);
 	printf("%d\n", sizeStack(s));
 	destroyStack(s);
+
+	struct vector *v = initVector();
+	for (int i = 0; i < 33; ++i) pushbackVector(v, 6);
+	for (int i = 0; i < 33; ++i) printf("%d ", atVector(v, i));
+	printf("\n%d-%d\n", v->length, v->capacity);
+	insertVector(v, 9, 11);
+	insertVector(v, 8, 20);
+	for (int i = 0; i < v->length; ++i) printf("%d ", atVector(v, i));
+	putchar('\n');
+	eraseVector(v, 11);
+	eraseVector(v, 19);
+	popbackVector(v);
+	for (int i = 0; i < v->length; ++i) printf("%d ", atVector(v, i));
+	putchar('\n');
+	destroyVector(v);
 }
