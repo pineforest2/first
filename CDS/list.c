@@ -67,7 +67,59 @@ void popStack(struct stack *s) {
 }
 void destroyStack(struct stack *s) { free(s); s = NULL; }
 
-
+/* 例程 */
+#define INIT_NUM 58 /* user-defined */
+struct vector {
+	int *data;
+	int length, capacity;
+};
+struct vector *initVector() {
+	struct vector *v = (struct vector *)malloc(sizeof(struct vector));
+	assert(v != NULL);
+	v->data = (int *)malloc(sizeof(int) * INIT_NUM);
+	assert(v->data != NULL);
+	v->length = 0;
+	v->capacity = INIT_NUM;
+	return v;
+}
+void pushbackVector(struct vector *v, int data) {
+	if (v->capacity - v->length < INIT_NUM / 2) {
+		// grow
+	}
+	*(v->data + v->length) = data;
+	v->length++;
+}
+void popbackVector(struct vector *v) { v->length--; }
+int atVector(struct vector *v, int idx) {
+	assert(idx >= 0 && idx < v->length);
+	return *(v->data + idx);
+}
+void insertVector(struct vector *v, int e, int idx) {
+	if (v->capacity - v->length < INIT_NUM / 2) {
+		// grow
+	}
+	int ptr1 = v->length;
+	int ptr2 = ptr1 - 1;
+	while (ptr2 >= idx) {
+		*(v->data + ptr1) = *(v->data + ptr2);
+		ptr1--; ptr2--;
+	}
+	*(v->data + ptr1) = e;
+	v->length++;
+}
+void eraseVector(struct vector *v, int idx) {
+	int ptr1 = idx;
+	int ptr2 = ptr1 + 1;
+	while (ptr2 < v->length) {
+		*(v->data + ptr1) = *(v->data + ptr2);
+		ptr1++; ptr2++;
+	}
+	v->length--;
+}
+void destroyVector(struct vector *v) {
+	free(v->data); v->data = NULL;
+	free(v); v = NULL;
+}
 
 int main() {
 	struct queue *q = initQueue();
