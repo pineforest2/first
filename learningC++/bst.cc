@@ -123,9 +123,9 @@ public:
 				ptr2 = ptr1->left_;
 			}
 			if (flag12 == 1) {
-				ptr1->left_ = nullptr;
+				ptr1->left_ = ptr2->right_;
 			} else if (flag12 == 2) {
-				ptr1->right_ = nullptr;
+				ptr1->right_ = ptr2->right_;
 			} else {
 				assert(false);
 			}
@@ -188,4 +188,9 @@ int main() {
 	bst.debug();
 	bst.remove(3);
 	bst.debug();
+	std::cout << bst.search(7).value() << std::endl;
+	std::cout << bst.search(13).value() << std::endl;
+	std::cout << bst.search(25).value() << std::endl;
+	std::cout << bst.search(3).has_value() << std::endl;
+	std::cout << bst.search(9).has_value() << std::endl;
 }

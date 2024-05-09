@@ -112,6 +112,7 @@ private:
         std::unique_ptr<Node> ptr = removeHelper2(*(subtree.right_));
         subtree.key_ = ptr->key_;
         subtree.value_ = ptr->value_;
+        retval = 1;
         return 4;
       }
     }
@@ -151,6 +152,7 @@ public:
     if (root_ == nullptr) { return 0; }
     int retval{0};
     removeHelper(*(root_), key, retval);
+    size_ -= retval;
     return retval;
   }
   std::optional<T> search(int key) {
@@ -196,4 +198,9 @@ int main() {
   bst.debug();
   bst.remove(3);
   bst.debug();
+  std::cout << bst.search(7).value() << std::endl;
+  std::cout << bst.search(13).value() << std::endl;
+  std::cout << bst.search(25).value() << std::endl;
+  std::cout << bst.search(3).has_value() << std::endl;
+  std::cout << bst.search(9).has_value() << std::endl;
 }
