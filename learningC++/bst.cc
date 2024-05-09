@@ -24,6 +24,12 @@ private:
 	};
 	std::shared_ptr<Node> root_;
 	size_t size_;
+
+	void debugHelper(Node& subtree) {
+		if (subtree.left_ != nullptr) debugHelper(*(subtree.left_));
+		std::cout << subtree.key_ << ' ';
+		if (subtree.right_ != nullptr) debugHelper(*(subtree.right_));
+	}
 public:
 	BST(): root_(nullptr), size_(0) {}
 	BST(const BST&) = delete;
@@ -144,6 +150,13 @@ public:
 	}
 	bool empty() { return size_ == 0; }
 	size_t size() { return size_; }
+
+	void debug() {
+		std::cout << size_ << ": { ";
+		if (root_ == nullptr) return;
+		else debugHelper(*root_);
+		std::cout << '}' << std::endl;
+	}
 };
 
 } /* namespace pineforest */
@@ -151,12 +164,28 @@ public:
 
 int main() {
 	pineforest::BST<std::string_view> bst;
-	bst.insert(7, "a");
-	bst.insert(5, "b");
-	bst.insert(3, "c");
-	bst.insert(6, "d");
-	bst.insert(9, "e");
-	bst.insert(8, "f");
-	bst.insert(10, "g");
+	bst.insert(9, "9");
+	bst.insert(7, "7");
+	bst.insert(6, "6");
+	bst.insert(5, "5");
+	bst.insert(3, "3");
+	bst.insert(8, "8");
+	bst.insert(20, "20");
+	bst.insert(26, "26");
+	bst.insert(15, "15");
+	bst.insert(12, "12");
+	bst.insert(13, "13");
+	bst.insert(23, "23");
+	bst.insert(25, "25");
+	bst.debug();
+	bst.remove(5);
+	bst.debug();
+	bst.remove(20); // bug
+	bst.debug();
+	bst.remove(12);
+	bst.debug();
 	bst.remove(9);
+	bst.debug();
+	bst.remove(3);
+	bst.debug();
 }
