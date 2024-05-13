@@ -155,6 +155,16 @@ struct LinkedListNode *makeLinkedListNode(int data) {
 void freeLinkedListNode(struct LinkedListNode **node) {
 	free(*node); *node = NULL;
 }
+void insertPrevLinkedList(struct LinkedListNode *inserted,
+                          struct LinkedListNode *newnode) {
+}
+void insertNextLinkedList(struct LinkedListNode *inserted,
+                          struct LinkedListNode *newnode) {
+}
+void removePrevLinkedList(struct LinkedListNode *removed) {
+}
+void removeNextLinkedList(struct LinkedListNode *removed) {
+}
 void pushfrontLinkedList(struct LinkedList *list, int data) {
 	struct LinkedListNode *ptr = list->head;
 	list->head = makeLinkedListNode(data);

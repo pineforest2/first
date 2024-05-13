@@ -24,7 +24,6 @@ int backQueue(struct queue *q);
 void destroyQueue(struct queue *q);
 ```
 
-
 ### stack
 
 stack和queue的实现方式基本相似，故不赘述。
@@ -45,3 +44,8 @@ struct vector {
 
 函数`insertVector`和`eraseVector`都有一个参数`idx`，其表示插入和删除的位置。显然在顺序表中插入和删除需要挪动之后的元素。
 函数`destroyVector`主要是调用函数`free`，意思也是很明确的。
+
+### linked list
+
+有两个结构体`LinkedListNode`和`LinkedList`，前者对应双向循环链表中的一个结点，后者对应整个双向循环链表。结构体`LinkedList`中的成员`size`表示链表中结点的个数，而成员`head`指向链表的队头。但是，当链表为空时，应该将`head`置为`NULL`，而`size`赋值为`0`。
+由于链表不适合随机访问，所以不提供相关接口。
