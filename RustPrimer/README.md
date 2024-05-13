@@ -1,6 +1,7 @@
 # Rust Primer
 
 学习Rust。
+本项目是基于Cargo构建。
 
 **`HuffmanBinary.rs`**
 
