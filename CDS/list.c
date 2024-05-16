@@ -153,17 +153,49 @@ struct LinkedListNode *makeLinkedListNode(int data) {
 	return node;
 }
 void freeLinkedListNode(struct LinkedListNode **node) {
+	(*node)->next = NULL;
+	(*node)->prev = NULL;
 	free(*node); *node = NULL;
+}
+void destroyLinkedList(struct LinkedList *list) {
+	struct LinkedListNode *ptr = list->head;
+	free(list); list = NULL;
+	ptr->prev->next = NULL;
+	ptr->prev = NULL;
+	struct LinkedListNode *ptr_t = ptr;
+	while (ptr != NULL) {
+		ptr = ptr->next;
+		free(ptr_t);
+		ptr_t = ptr;
+	}
 }
 void insertPrevLinkedList(struct LinkedListNode *inserted,
                           struct LinkedListNode *newnode) {
+	assert(inserted != NULL);
+	assert(newnode != NULL);
+	newnode->prev = inserted->prev;
+	inserted->prev = newnode;
+	newnode->prev->next = newnode;
+	newnode->next = inserted;
 }
 void insertNextLinkedList(struct LinkedListNode *inserted,
                           struct LinkedListNode *newnode) {
+	assert(inserted != NULL);
+	assert(newnode != NULL);
+	newnode->next = inserted->next;
+	inserted->next = newnode;
+	newnode->next->prev = newnode;
+	newnode->prev = inserted;
 }
-void removePrevLinkedList(struct LinkedListNode *removed) {
-}
-void removeNextLinkedList(struct LinkedListNode *removed) {
+void removeLinkedList(struct LinkedListNode *removed) {
+	assert(removed != NULL);
+	if (removed->next = removed) {
+		assert(removed->prev = removed);
+		freeLinkedListNode(&removed);
+	} else {
+		removed->prev->next = removed->next;
+		removed->next->prev = removed->prev;
+	}
 }
 void pushfrontLinkedList(struct LinkedList *list, int data) {
 	struct LinkedListNode *ptr = list->head;
@@ -204,6 +236,16 @@ void test1LinkedList() {
 	popfrontLinkedList(list);
 }
 
+void test2LinkedList() {
+	struct LinkedList *list = initLinkedList();
+	pushfrontLinkedList(list, 2);
+	pushfrontLinkedList(list, 7);
+	struct LinkedListNode *newnode = makeLinkedListNode(8);
+	insertNextLinkedList(list->head, newnode);
+	destroyLinkedList(list);
+	printf("%ld\n", list->size);
+}
+
 /* 简单的测试 */
 int main() {
 	struct queue *q = initQueue();
@@ -236,4 +278,5 @@ int main() {
 	destroyVector(v);
 
 	test1LinkedList();
+	test2LinkedList();
 }
