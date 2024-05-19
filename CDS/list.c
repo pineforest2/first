@@ -36,7 +36,7 @@ int backQueue(struct queue *q) {
 	assert(q->tail != q->head);
 	return (q->tail!=0) ? q->data[q->tail-1] : q->data[QUEUE_MAXN-1];
 }
-void destroyQueue(struct queue *q) { free(q); q = NULL; }
+void destroyQueue(struct queue **q) { free(*q); *q = NULL; }
 
 
 /* 例程：用数组实现的栈。程序仅作参考。 */
@@ -65,7 +65,7 @@ void popStack(struct stack *s) {
 	assert(s->top != -1);
 	s->top--;
 }
-void destroyStack(struct stack *s) { free(s); s = NULL; }
+void destroyStack(struct stack **s) { free(*s); *s = NULL; }
 
 
 /* 例程：用数组实现的顺序表。程序仅作参考。 */
@@ -121,9 +121,9 @@ void eraseVector(struct vector *v, int idx) {
 	}
 	v->length--;
 }
-void destroyVector(struct vector *v) {
-	free(v->data); v->data = NULL;
-	free(v); v = NULL;
+void destroyVector(struct vector **v) {
+	free((*v)->data); (*v)->data = NULL;
+	free(*v); *v = NULL;
 }
 
 
@@ -134,13 +134,11 @@ struct LinkedListNode {
 };
 struct LinkedList {
 	struct LinkedListNode *head;
-	size_t size;
 };
 struct LinkedList *initLinkedList() {
 	struct LinkedList *list = (struct LinkedList *)malloc(sizeof(struct LinkedList));
 	assert(list != NULL);
 	list->head = NULL;
-	list->size = 0;
 	return list;
 }
 struct LinkedListNode *makeLinkedListNode(int data) {
@@ -152,14 +150,9 @@ struct LinkedListNode *makeLinkedListNode(int data) {
 	node->data = data;
 	return node;
 }
-void freeLinkedListNode(struct LinkedListNode **node) {
-	(*node)->next = NULL;
-	(*node)->prev = NULL;
-	free(*node); *node = NULL;
-}
-void destroyLinkedList(struct LinkedList *list) {
-	struct LinkedListNode *ptr = list->head;
-	free(list); list = NULL;
+void destroyLinkedList(struct LinkedList **list) {
+	struct LinkedListNode *ptr = (*list)->head;
+	free(*list); *list = NULL;
 	ptr->prev->next = NULL;
 	ptr->prev = NULL;
 	struct LinkedListNode *ptr_t = ptr;
@@ -191,17 +184,17 @@ void removeLinkedList(struct LinkedListNode *removed) {
 	assert(removed != NULL);
 	if (removed->next = removed) {
 		assert(removed->prev = removed);
-		freeLinkedListNode(&removed);
+		free(removed);
 	} else {
 		removed->prev->next = removed->next;
 		removed->next->prev = removed->prev;
+		free(removed);
 	}
 }
 void pushfrontLinkedList(struct LinkedList *list, int data) {
 	struct LinkedListNode *ptr = list->head;
 	list->head = makeLinkedListNode(data);
 	if (ptr != NULL) {
-		assert(list->size != 0);
 		ptr->prev->next = list->head;
 		list->head->prev = ptr->prev;
 		list->head->next = ptr;
@@ -210,27 +203,25 @@ void pushfrontLinkedList(struct LinkedList *list, int data) {
 		list->head->next = list->head;
 		list->head->prev = list->head;
 	}
-	(list->size)++;
 }
 void popfrontLinkedList(struct LinkedList *list) {
-	assert(list->head != NULL && list->size != 0);
+	assert(list->head != NULL);
 	struct LinkedListNode *ptr = list->head;
-	if (list->size == 1) {
-		assert(ptr == ptr->next && ptr == ptr->prev);
-		freeLinkedListNode(&ptr);
+	if (ptr == ptr->next && ptr == ptr->prev) {
+		free(list->head);
+		list->head = NULL;
 	} else {
 		list->head = ptr->next;
 		list->head->prev = ptr->prev;
 		ptr->prev->next = list->head;
-		freeLinkedListNode(&ptr);
+		free(ptr);
 	}
-	(list->size)--;
 }
 
 void test1LinkedList() {
 	struct LinkedList *list = initLinkedList();
 	pushfrontLinkedList(list, 2);
-	popfrontLinkedList(list); // bug
+	popfrontLinkedList(list);
 	pushfrontLinkedList(list, 7);
 	pushfrontLinkedList(list, 8);
 	popfrontLinkedList(list);
@@ -241,9 +232,8 @@ void test2LinkedList() {
 	pushfrontLinkedList(list, 2);
 	pushfrontLinkedList(list, 7);
 	struct LinkedListNode *newnode = makeLinkedListNode(8);
-	insertNextLinkedList(list->head, newnode);
-	destroyLinkedList(list);
-	printf("%ld\n", list->size);
+	insertNextLinkedList(list->head, newnode); // bug
+	destroyLinkedList(&list);
 }
 
 /* 简单的测试 */
@@ -253,14 +243,16 @@ int main() {
 	printf("%d %d %d\n", sizeQueue(q), frontQueue(q), backQueue(q));
 	popQueue(q);
 	printf("%d\n", sizeQueue(q));
-	destroyQueue(q);
+	destroyQueue(&q);
+	assert(q == NULL);
 
 	struct stack *s = initStack();
 	pushStack(s, 77);
 	printf("%d %d\n", sizeStack(s), topStack(s));
 	popStack(s);
 	printf("%d\n", sizeStack(s));
-	destroyStack(s);
+	destroyStack(&s);
+	assert(s == NULL);
 
 	struct vector *v = initVector();
 	for (int i = 0; i < 33; ++i) pushbackVector(v, 6);
@@ -275,8 +267,10 @@ int main() {
 	popbackVector(v);
 	for (int i = 0; i < v->length; ++i) printf("%d ", atVector(v, i));
 	putchar('\n');
-	destroyVector(v);
+	destroyVector(&v);
+	assert(v == NULL);
 
+	printf("\n------   Linked List Testing   ------\n");
 	test1LinkedList();
 	test2LinkedList();
 }

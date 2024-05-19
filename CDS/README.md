@@ -2,6 +2,8 @@
 
 Use C programming language to write some sample code about Data Structure.
 
+有的API的形参是二级指针，这是一个值得思考的问题。主要原因是我们不仅希望修改指针变量所指向的对象，甚至希望修改指针变量。
+
 ## list
 
 ### queue
@@ -53,3 +55,15 @@ struct vector {
 目前用C实现链表存在这几个问题。
 首先是由于C中不存在任何保护机制，所以链表中东西都是可以被程序员访问。这会造成，假设有三个结点的双向链表，我获取到其中一个结点的指针，然后将该结点中**原本应该指向下一个结点的指针**赋值为`NULL`，这显然使得链表被破坏了。
 因此，我们只能规定在我们的设计中**不允许直接使用指针对结点进行修改**，而应该使用提供的API对结点进行修改。
+
+函数`initLinkedList`使用`malloc`一个`LinkedList`对象，并返回指向它的指针。
+函数`makeLinkedListNode`使用`malloc`一个`LinkedListNode`的对象，并返回指向它的指针。
+函数`destroyLinkedList`略。
+函数`insertPrevLinkedList`略。
+函数`insertNextLinkedList`略。
+函数`removeLinkedList`略。
+函数`pushfrontLinkedList`向队头加入数据。
+函数`popfrontLinkedList`从队头删除数据。
+函数`pushbackLinkedList`向队尾加入数据。
+函数`popbackLinkedList`从队尾删除数据。
+函数`lengthLinkedList`略。
