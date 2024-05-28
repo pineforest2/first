@@ -1,26 +1,41 @@
 #include <stdio.h>
 #include <assert.h>
 
+#define IS_1_9_DIGIT(ch) ((ch)>='1' && (ch)<='9')
+#define IS_A_F_DIGIT(ch) ((ch)>='A' && (ch)<='F')
 #define IS_DEC_DIGIT(ch) ((ch)>='0' && (ch)<='9')
 #define IS_OCT_DIGIT(ch) ((ch)>='0' && (ch)<='7')
-#define IS_HEX_DIGIT(ch) (IS_DEC_DIGIT(ch) || ((ch)>='a' && (ch)<='f'))
-#define IS_1_9_DIGIT(ch) ((ch)>='1' && (ch)<='9')
+#define IS_HEX_DIGIT(ch) (IS_DEC_DIGIT(ch) || IS_A_F_DIGIT(ch) || ((ch)>='a' && (ch)<='f'))
 
 static inline int
-ch2num(char ch, int radix) {
+__ch2num(char ch, int radix) {
 	if (radix == 10 && IS_DEC_DIGIT(ch)) return ch - '0';
 	if (radix == 10 && !IS_DEC_DIGIT(ch)) assert(0);
 	if (radix == 8 && IS_OCT_DIGIT(ch)) return ch - '0';
 	if (radix == 8 && !IS_OCT_DIGIT(ch)) assert(0);
 	if (radix == 16 && IS_HEX_DIGIT(ch)) {
 		if (IS_DEC_DIGIT(ch)) return ch - '0';
-		else return ch - 'a' + 10;
+		else return (IS_A_F_DIGIT(ch)) ? ch - 'A' + 10 : ch - 'a' + 10;
 	}
 	if (radix == 16 && !IS_HEX_DIGIT(ch)) assert(0);
+	/* suppressing warning */
+	return -1;
+}
+
+/* fast integer power */
+static inline int
+__pow(int a, int n) {
+	int ans = 1;
+	while (n) {
+		if (n & 1) ans *= a;
+		a *= a;
+		n >>= 1;
+	}
+	return ans;
 }
 
 static inline unsigned int
-string_length(const char *string) {
+__strlen(const char *string) {
 	unsigned int len = 0;
 	while (*(string + len) != '\0') len++;
 	return len;
@@ -29,53 +44,54 @@ string_length(const char *string) {
 static inline int
 __proc_prefix(char c0, char c1, char c2,
               unsigned int *idx, char *isneg, char *radix) {
-	if (!IS_DEC_DIGIT(c1) && c1 != '+' && c1 != '-') {
+	if (!IS_DEC_DIGIT(c0) && c0 != '+' && c0 != '-') {
 		return -1;
 	}
 
 	if (c0 == '+' && IS_1_9_DIGIT(c1)) {
 		(*idx)++;
-		radix = 10;
+		*radix = 10;
 	}
 	if (c0 == '-' && IS_1_9_DIGIT(c1)) {
 		(*idx)++;
-		isneg = 1;
-		radix = 10;
+		*isneg = 1;
+		*radix = 10;
 	}
-	if (c0 == '+' && c1 == '0' && c2 == 'x') {
+	if (c0 == '+' && c1 == '0' && (c2 == 'x' || c2 == 'X')) {
 		(*idx) += 3;
-		isneg = 1;
-		radix = 16;
+		*radix = 16;
 	}
-	if (c0 == '-' && c1 == '0' && c2 == 'x') {
+	if (c0 == '-' && c1 == '0' && (c2 == 'x' || c2 == 'X')) {
 		(*idx) += 3;
-		radix = 16;
+		*isneg = 1;
+		*radix = 16;
 	}
 	if (c0 == '+' && c1 == '0' && IS_OCT_DIGIT(c2)) {
 		(*idx) += 3;
-		isneg = 1;
-		radix = 8;
+		*isneg = 1;
+		*radix = 8;
 	}
 	if (c0 == '-' && c1 == '0' && IS_OCT_DIGIT(c2)) {
 		(*idx) += 3;
-		radix = 8;
+		*radix = 8;
 	}
 
 	if (IS_1_9_DIGIT(c0)) {
-		radix = 10;
+		*radix = 10;
 	}
-	if (c0 == '0' && c1 == 'x') {
+	if (c0 == '0' && (c1 == 'x' || c1 == 'X')) {
 		(*idx) += 2;
-		radix = 16;
+		*radix = 16;
 	}
 	if (c0 == '0' && IS_OCT_DIGIT(c1)) {
 		(*idx)++;
-		radix = 8;
+		*radix = 8;
 	}
+	return 0;
 }
 
 int parse_int(const char *str) {
-	unsigned int len = string_length(str);
+	unsigned int len = __strlen(str);
 	unsigned int idx = 0;
 	unsigned int ridx = len - 1;
 	char isneg = 0;
@@ -92,15 +108,38 @@ int parse_int(const char *str) {
 		} else break;
 	}
 	/* counting value */
-	while (ridx > idx) {
-		value += ch2num(*(str + ridx), radix) * __pow(radix, len - ridx - 1);
-		ridx--;
+	while (ridx >= idx) {
+		value += __ch2num(*(str + ridx), radix) * __pow(radix, len - ridx - 1);
+		/* The ridx is unsigned. */
+		if (ridx > 0) ridx--;
+		else break;
 	}
-	return value;
+	return (isneg) ? -value : value;
 }
 
 
 #ifndef IS_LIB
+
+#define TEST_EQ(x, y) \
+	do { \
+		if (x == y) printf("passed\n"); \
+		else printf("error\n"); \
+	} while (0)
+
 int main() {
+	TEST_EQ(11, parse_int("11"));
+	TEST_EQ(+11, parse_int("+11"));
+	TEST_EQ(-11, parse_int("-11"));
+	TEST_EQ(0x1f, parse_int("0x1f"));
+	TEST_EQ(+0x1f, parse_int("+0x1f"));
+	TEST_EQ(-0x1f, parse_int("-0x1f"));
+	TEST_EQ(0x00abcdef, parse_int("0x00abcdef"));
+	TEST_EQ(0X1F, parse_int("0X1F"));
+	TEST_EQ(+0x1F, parse_int("+0x1F"));
+	TEST_EQ(0X1f, parse_int("0X1f"));
+	TEST_EQ(0, parse_int("0"));
+	TEST_EQ(000, parse_int("000"));
+	TEST_EQ(011, parse_int("011"));
+	TEST_EQ(0011, parse_int("0011"));
 }
 #endif
