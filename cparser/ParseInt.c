@@ -22,25 +22,6 @@ __ch2num(char ch, int radix) {
 	return -1;
 }
 
-/* fast integer power */
-static inline int
-__pow(int a, int n) {
-	int ans = 1;
-	while (n) {
-		if (n & 1) ans *= a;
-		a *= a;
-		n >>= 1;
-	}
-	return ans;
-}
-
-static inline unsigned int
-__strlen(const char *string) {
-	unsigned int len = 0;
-	while (*(string + len) != '\0') len++;
-	return len;
-}
-
 static inline int
 __proc_prefix(char c0, char c1, char c2,
               unsigned int *idx, char *isneg, char *radix) {
@@ -90,8 +71,17 @@ __proc_prefix(char c0, char c1, char c2,
 	return 0;
 }
 
-int parse_int(const char *str) {
-	unsigned int len = __strlen(str);
+unsigned int fast_pow(unsigned int a, unsigned int n) {
+	unsigned int ans = 1;
+	while (n) {
+		if (n & 1) ans *= a;
+		a *= a;
+		n >>= 1;
+	}
+	return ans;
+}
+
+int parse_int(const char *str, unsigned int len) {
 	unsigned int idx = 0;
 	unsigned int ridx = len - 1;
 	char isneg = 0;
@@ -109,7 +99,7 @@ int parse_int(const char *str) {
 	}
 	/* counting value */
 	while (ridx >= idx) {
-		value += __ch2num(*(str + ridx), radix) * __pow(radix, len - ridx - 1);
+		value += __ch2num(*(str + ridx), radix) * fast_pow(radix, len - ridx - 1);
 		/* The ridx is unsigned. */
 		if (ridx > 0) ridx--;
 		else break;
@@ -127,19 +117,19 @@ int parse_int(const char *str) {
 	} while (0)
 
 int main() {
-	TEST_EQ(11, parse_int("11"));
-	TEST_EQ(+11, parse_int("+11"));
-	TEST_EQ(-11, parse_int("-11"));
-	TEST_EQ(0x1f, parse_int("0x1f"));
-	TEST_EQ(+0x1f, parse_int("+0x1f"));
-	TEST_EQ(-0x1f, parse_int("-0x1f"));
-	TEST_EQ(0x00abcdef, parse_int("0x00abcdef"));
-	TEST_EQ(0X1F, parse_int("0X1F"));
-	TEST_EQ(+0x1F, parse_int("+0x1F"));
-	TEST_EQ(0X1f, parse_int("0X1f"));
-	TEST_EQ(0, parse_int("0"));
-	TEST_EQ(000, parse_int("000"));
-	TEST_EQ(011, parse_int("011"));
-	TEST_EQ(0011, parse_int("0011"));
+	TEST_EQ(11, parse_int("11", 2));
+	TEST_EQ(+11, parse_int("+11", 3));
+	TEST_EQ(-11, parse_int("-11", 3));
+	TEST_EQ(0x1f, parse_int("0x1f", 4));
+	TEST_EQ(+0x1f, parse_int("+0x1f", 5));
+	TEST_EQ(-0x1f, parse_int("-0x1f", 5));
+	TEST_EQ(0x00abcdef, parse_int("0x00abcdef", 10));
+	TEST_EQ(0X1F, parse_int("0X1F", 4));
+	TEST_EQ(+0x1F, parse_int("+0x1F", 5));
+	TEST_EQ(0X1f, parse_int("0X1f", 4));
+	TEST_EQ(0, parse_int("0", 1));
+	TEST_EQ(000, parse_int("000", 3));
+	TEST_EQ(011, parse_int("011", 3));
+	TEST_EQ(0011, parse_int("0011", 4));
 }
 #endif
