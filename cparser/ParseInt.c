@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <assert.h>
 
+#include "common.h"
+
 #define IS_1_9_DIGIT(ch) ((ch)>='1' && (ch)<='9')
 #define IS_A_F_DIGIT(ch) ((ch)>='A' && (ch)<='F')
 #define IS_DEC_DIGIT(ch) ((ch)>='0' && (ch)<='9')
@@ -71,15 +73,6 @@ __proc_prefix(char c0, char c1, char c2,
 	return 0;
 }
 
-unsigned int fast_pow(unsigned int a, unsigned int n) {
-	unsigned int ans = 1;
-	while (n) {
-		if (n & 1) ans *= a;
-		a *= a;
-		n >>= 1;
-	}
-	return ans;
-}
 
 int parse_int(const char *str, unsigned int len) {
 	unsigned int idx = 0;
@@ -99,7 +92,7 @@ int parse_int(const char *str, unsigned int len) {
 	}
 	/* counting value */
 	while (ridx >= idx) {
-		value += __ch2num(*(str + ridx), radix) * fast_pow(radix, len - ridx - 1);
+		value += __ch2num(*(str + ridx), radix) * fast_pow1(radix, len - ridx - 1);
 		/* The ridx is unsigned. */
 		if (ridx > 0) ridx--;
 		else break;
